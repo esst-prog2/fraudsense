@@ -1,0 +1,19 @@
+transaction_id,customer_id,amount,timestamp,risk_score,reasons
+T00282,C001,4257.77,2026-09-05T07:00:37,1.00,"amount $4,257.77 is 11.2x this customer's average ($380)"
+T00469,C035,5507.20,2026-09-07T17:00:14,0.99,"amount $5,507.20 is 9.6x this customer's average ($571); 6 transactions in the last 10 minutes (rule fires at 5)"
+T00288,C033,3002.12,2026-09-05T08:26:01,0.98,"amount $3,002.12 is 9.4x this customer's average ($320)"
+T00295,C007,2630.47,2026-09-05T10:00:21,0.97,"amount $2,630.47 is 9.2x this customer's average ($286)"
+T00084,C030,2309.89,2026-09-02T13:48:24,0.96,"amount $2,309.89 is 9.1x this customer's average ($255)"
+T00210,C017,3901.26,2026-09-03T22:59:47,0.91,"amount $3,901.26 is 7.9x this customer's average ($496)"
+T00101,C037,622.04,2026-09-02T17:37:57,0.89,amount $622.04 is 7.2x this customer's average ($86); 7 transactions in the last 10 minutes (rule fires at 5)
+T00461,C012,3757.85,2026-09-07T16:41:51,0.88,"amount $3,757.85 is 7.1x this customer's average ($528)"
+T00206,C010,533.42,2026-09-03T21:41:49,0.88,7 transactions in the last 10 minutes (rule fires at 5)
+T00100,C037,85.00,2026-09-02T17:37:38,0.84,6 transactions in the last 10 minutes (rule fires at 5)
+T00205,C010,568.75,2026-09-03T21:39:02,0.84,6 transactions in the last 10 minutes (rule fires at 5)
+T00272,C027,394.92,2026-09-04T19:47:33,0.84,6 transactions in the last 10 minutes (rule fires at 5)
+T00099,C037,110.03,2026-09-02T17:37:25,0.80,5 transactions in the last 10 minutes (rule fires at 5)
+T00191,C021,360.17,2026-09-03T19:15:19,0.80,5 transactions in the last 10 minutes (rule fires at 5)
+T00203,C010,662.69,2026-09-03T21:36:35,0.80,5 transactions in the last 10 minutes (rule fires at 5)
+T00271,C027,535.62,2026-09-04T19:47:06,0.80,5 transactions in the last 10 minutes (rule fires at 5)
+T00355,C028,145.39,2026-09-05T20:51:11,0.80,5 transactions in the last 10 minutes (rule fires at 5)
+T00468,C035,479.50,2026-09-07T16:59:21,0.80,5 transactions in the last 10 minutes (rule fires at 5)

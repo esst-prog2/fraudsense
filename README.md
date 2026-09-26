@@ -6,16 +6,21 @@
 
 I run `python fraudsense.py score data/sample_transactions.csv`. It cleans the data, scores all 500 transactions, and prints:
 
-Scored 500 transactions in 2.3s.
-14 flagged as high-risk (score > 0.75).
+```
+Scored 500 transactions in 0.01s.
+18 flagged as high-risk (score > 0.75).
 Report written to reports/fraud_report.csv.
+```
 
-I open "reports/fraud_report.csv" and see the 14 flagged rows, each with a transaction id, a risk score, and a short reason. I then run `python fraudsense.py explain --id T00231` on one of them, and it prints the features that pushed the score up:
+I open `reports/fraud_report.csv` and see the 18 flagged rows, each with a transaction id, a risk score, and a short reason. I then run `python fraudsense.py explain --id T00101` on one of them, and it prints the features that pushed the score up:
 
+```
+Transaction T00101 - risk score 0.89
+  amount $622.04 is 7.2x this customer's average ($86)
+  7 transactions in the last 10 minutes (rule fires at 5)
+```
 
-Transaction T00231 — risk score 0.91
-  amount $4,200 is 8x this customer's typical transaction ($525)
-  6 transactions in the last 10 minutes (typical: 1)
+The sample file is synthetic, with planted anomalies; `python scripts/make_sample.py` regenerates it identically. Python 3.10+ is all it needs, and `python -m unittest discover tests` runs the tests.
 
 ## 2. The shape
 
@@ -35,16 +40,23 @@ in between    clean and validate the data; build per-customer behavioural
 
 Model training and comparison happens once, offline, before this pipeline runs on new data — it is not something that happens on every run.
 
+The first version scores with rules only; the trained model is a planned future change.
+
 ## 3. The size
 
-**First useful version**
+**First useful version (rules only)**
 
 * Reads a transaction CSV and cleans it, exiting with a clear error if a required column is missing.
-* Computes per-customer behavioural features: typical spend, transaction frequency, location and payment-method patterns.
+* Computes per-customer behavioural features: typical spend and transaction frequency.
 * Applies a small set of rule-based checks (e.g. an amount far above the customer's average, many transactions in a short window).
-* Scores every transaction with a trained ML model, chosen by comparing at least two candidate models offline using precision, recall, F1 and PR-AUC.
 * Writes `reports/fraud_report.csv` listing the high-risk transactions, their scores and reasons.
 * Lets me look up any transaction by id and see the specific features and rules behind its score.
+
+**Future changes**
+
+* Scores every transaction with a trained ML model, chosen by comparing at least two candidate models offline using precision, recall, F1 and PR-AUC.
+* Location and payment-method features.
+* Richer explanations beyond the rule reasons.
 
 **Not this term**
 
