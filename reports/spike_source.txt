@@ -1,0 +1,5 @@
+Dataset: Credit Card Transactions Fraud Detection Dataset (Sparkov simulation), file fraudTrain.csv
+URL: https://www.kaggle.com/datasets/kartik2112/fraud-detection
+Downloaded: 2026-10-03
+SHA256: FD7139200DBFCBED0B6742BBE05A4F1ABCE532C4FEF20918228A651647A3E75D
+Note: simulated data, not real bank transactions. Full file is not committed (data/raw/ is gitignored).
