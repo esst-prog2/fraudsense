@@ -83,3 +83,5 @@ Fraud cases are usually far less common than normal transactions, so accuracy al
 I do not yet know which behavioural features will hold up on the dataset I choose — for example, I may not have enough history to calculate a reliable "normal spending pattern" per customer. I will adapt the features to what the data actually supports rather than forcing ones it can't.
 
 The explanation feature is also untested territory. If model-based explanations turn out to be too complex for the first version, I will fall back to explanations based on the rules and the model's raw feature weights.
+
+The rule thresholds are not validated yet. On a slice of Sparkov (simulated data), the amount rule at 5x flagged 500 rows, of which 68 were true positives: precision 0.136, recall 0.433. The velocity rule never fired. So I no longer treat the 5x default as validated, and a threshold study is the next change. See `reports/spike_counts.txt`.
