@@ -19,3 +19,5 @@
 2026-09-26: Sample data comes from scripts/make_sample.py (seed 42, ~40 customers, 500 rows, 10–15 planted anomalies) and the generated CSV is committed; decided by assistant.
 2026-09-26: Reason text always shows the customer's average rounded to whole dollars (e.g. "$86"), while the transaction amount keeps its cents unless it is a whole number; decided by assistant.
 2026-09-26: `explain` output uses a plain ASCII " - " in its header line instead of an em dash, so it prints safely on Windows consoles and pipes; decided by assistant.
+2026-10-02: Spike question: outside my generator, does per-customer history exist in public labelled data (Sparkov first), and what do the amount and velocity rules catch at 0.75; decided by user (question from instructor's issue #3).
+2026-10-02: Answer criterion, set before measuring: keep the amount rule at 5x if, on the Sparkov slice at 0.75, it catches at least 30% of the fraud rows with precision of at least 50%; otherwise I change its threshold or drop it. The share of rows whose customer has 4+ transactions is a precondition only; decided by user.
