@@ -26,3 +26,5 @@
 2026-10-11: HW5 red/green: I changed AMOUNT_RATIO_THRESHOLD from 5.0 to 50.0 in fraudsense_core/rules.py line 9; python -m unittest tests.test_planted then printed FAILED because T9001 was no longer flagged. I restored the line with git restore and the same command printed OK. Test code was written with an AI chat assistant after my limit ran out on my usual agent; the id T9001 and the conditions were my own.
 2026-10-11: HW5 real run, expectation before running: I expect [N] flagged row(s), [which one and why].
 2026-10-11: HW5 real run, result: [what it printed, and whether it matched; if not, say 'next test' or 'bug' and why].
+2026-10-11: HW5 correction: the two earlier real-run lines were unfilled placeholders and that first run used example data, so it does not count. New real run on my own transactions. Expectation, written before running: I expect X row(s) flagged, namely Y, because Z.
+2026-10-11: HW5 real run result: it flagged A row(s), namely B. This matched / did not match my expectation because C. [If it did not match: next test or bug note.]
