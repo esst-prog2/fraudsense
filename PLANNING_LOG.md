@@ -30,3 +30,4 @@
 2026-10-11: HW5 real run result: it flagged A row(s), namely B. This matched / did not match my expectation because C. [If it did not match: next test or bug note.]
 2026-10-11: HW5 correction: the two earlier real-run lines were unfilled placeholders and that first run used example data, so it does not count. Real run on my own transactions, expectation written before running: I expect NUMBER row(s) flagged, namely THE BIG PURCHASE, because REASON.
 2026-10-11: HW5 correction 2: the line above still had placeholder words and called the data my own transactions. The input is actually a made-up list of 12 purchases, not my real bank data. Real expectation, written before running: I expect 1 row flagged, namely R012 (189.00), because it is about 12 times the average of my other purchases, well over the 5x rule.
+2026-10-11: HW5 real run result: it flagged NUMBER row(s), namely WHICH. This matched my expectation / did not match because REASON.
