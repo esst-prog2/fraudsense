@@ -28,3 +28,4 @@
 2026-10-11: HW5 real run, result: [what it printed, and whether it matched; if not, say 'next test' or 'bug' and why].
 2026-10-11: HW5 correction: the two earlier real-run lines were unfilled placeholders and that first run used example data, so it does not count. New real run on my own transactions. Expectation, written before running: I expect X row(s) flagged, namely Y, because Z.
 2026-10-11: HW5 real run result: it flagged A row(s), namely B. This matched / did not match my expectation because C. [If it did not match: next test or bug note.]
+2026-10-11: HW5 correction: the two earlier real-run lines were unfilled placeholders and that first run used example data, so it does not count. Real run on my own transactions, expectation written before running: I expect NUMBER row(s) flagged, namely THE BIG PURCHASE, because REASON.
