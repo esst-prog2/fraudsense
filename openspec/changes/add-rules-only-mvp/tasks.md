@@ -34,7 +34,7 @@
 
 ## 7. Sample data and demo
 
-- [ ] 7.1 Write `scripts/make_sample.py` (seed 42, about 40 customers, 500 rows, 10–15 planted anomalies, a few short-history customers, unused `location` and `payment_method` columns) and commit the generated `data/sample_transactions.csv`; verify the file has 500 data rows and that running the script twice produces an identical file
+- [x] 7.1 Write `scripts/make_sample.py` (seed 42, about 40 customers, 500 rows, 10–15 planted anomalies, a few short-history customers, unused `location` and `payment_method` columns) and commit the generated `data/sample_transactions.csv`; verify the file has 500 data rows and that running the script twice produces an identical file
 - [x] 7.2 Run `python fraudsense.py score data/sample_transactions.csv`, then `explain` on one flagged id; verify the planted anomalies appear in the report with sensible reasons, and note the actual flagged count
 - [x] 7.3 Update the README demo section so its numbers and example output match the real run, and mark the model and location/payment items as future changes; verify every command in the README runs as written
 - [x] 7.4 Run the whole test suite with `python -m unittest discover tests`; verify all tests pass
