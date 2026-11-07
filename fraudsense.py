@@ -2,12 +2,14 @@
 
     python fraudsense.py score data/sample_transactions.csv
     python fraudsense.py explain --id T00231
+    python fraudsense.py evaluate data/spike_slice.csv
 """
 
 import argparse
 import sys
 import time
 
+from fraudsense_core.evaluate import EvaluateError, format_evaluation, load_labels
 from fraudsense_core.explain import ExplainError, find_transaction, format_explanation
 from fraudsense_core.ingest import IngestError
 from fraudsense_core.pipeline import score_file
@@ -35,6 +37,11 @@ def build_parser():
     explain.add_argument(
         "--file", default=DEFAULT_FILE, help=f"transaction CSV (default: {DEFAULT_FILE})"
     )
+
+    evaluate = commands.add_parser(
+        "evaluate", help="check the flags against the CSV's is_fraud labels (writes nothing)"
+    )
+    evaluate.add_argument("csv", help="transaction CSV with an is_fraud column (1 or 0)")
     return parser
 
 
@@ -51,14 +58,21 @@ def run_explain(transaction_id, csv_path):
     print(format_explanation(find_transaction(scored, transaction_id)))
 
 
+def run_evaluate(csv_path):
+    scored, skipped = score_file(csv_path)
+    print(format_evaluation(scored, load_labels(csv_path), skipped))
+
+
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         if args.command == "score":
             run_score(args.csv)
+        elif args.command == "evaluate":
+            run_evaluate(args.csv)
         else:
             run_explain(args.id, args.file)
-    except (IngestError, ExplainError) as error:
+    except (IngestError, ExplainError, EvaluateError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0
