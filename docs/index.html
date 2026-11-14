@@ -3,126 +3,298 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fraudsense: explainable fraud shortlist for transaction files</title>
-<meta name="description" content="fraudsense is a command-line program that reads a CSV of transactions and gives back the ones worth a second look, each with a risk score and a plain-words reason.">
+<meta name="color-scheme" content="light">
+<title>fraudsense</title>
+<meta name="description" content="A shortlist of the transactions worth a second look, each with the reason it was picked.">
 <style>
-  :root {
-    --bg: #fbfaf7;
-    --surface: #ffffff;
-    --text: #1d2327;
-    --muted: #5a646b;
-    --line: #dcd9d1;
-    --accent: #0b5c4a;
-    --accent-text: #ffffff;
-    --code-bg: #f1efe9;
-    --warn-bg: #fdf3dc;
-    --warn-line: #d9a520;
+  @property --sweep {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 360deg;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14181a;
-      --surface: #1c2224;
-      --text: #e7e9e6;
-      --muted: #a3adb1;
-      --line: #343c40;
-      --accent: #5fd0b1;
-      --accent-text: #0d1b17;
-      --code-bg: #232a2d;
-      --warn-bg: #2d2714;
-      --warn-line: #c9992a;
-    }
+  :root {
+    --paper: #ffffff;
+    --ink: #1c2a4a;
+    --ink-visited: #4b3a6e;
+    --rule: #a9c4e0;
+    --wash: rgba(169, 196, 224, 0.24);
+    --select: #cfe0f2;
+    --margin-line: #e7a1ab;
+    --marker: #c8102e;
+    --line: 2rem;
+    --gutter: 1rem;
+    --margin-x: 1.25rem;
+    --rule-y: 1.5625rem;
+    --ruled: linear-gradient(to bottom,
+      transparent var(--rule-y),
+      var(--rule) var(--rule-y),
+      var(--rule) calc(var(--rule-y) + 1px),
+      transparent calc(var(--rule-y) + 1px));
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image: linear-gradient(to right,
+      transparent var(--margin-x),
+      var(--margin-line) var(--margin-x),
+      var(--margin-line) calc(var(--margin-x) + 2px),
+      transparent calc(var(--margin-x) + 2px));
+    font-family: "Courier New", Courier, "Nimbus Mono PS", "Liberation Mono", monospace;
     font-size: 1.0625rem;
-    line-height: 1.6;
+    line-height: var(--line);
   }
-  main, header.hero, footer {
-    max-width: 44rem;
-    margin: 0 auto;
-    padding: 0 1rem;
+  ::selection { background: var(--select); color: var(--ink); }
+
+  .sheet {
+    --pad-l: calc(var(--margin-x) + 1rem);
+    --measure: 46rem;
+    padding: var(--line) 0 calc(var(--line) * 2);
   }
-  header.hero { padding-top: 3.5rem; padding-bottom: 2rem; }
+  header { position: relative; }
+
+  /* Every block carries its own rules, edge to edge like ruled paper,
+     so text always sits on a line whatever came before it. */
+  h1, h2, ul, p:not(.note), .typed, .tally, .remark, .score-slot {
+    margin: 0;
+    padding-left: var(--pad-l);
+    padding-right: max(var(--gutter), calc(100% - var(--pad-l) - var(--measure)));
+    background-image: var(--ruled);
+    background-size: 100% var(--line);
+    background-origin: content-box;
+  }
+  ul, p:not(.note), .typed, .tally, .remark { padding-bottom: var(--line); }
+
   h1 {
-    margin: 0 0 0.75rem;
-    font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
-    font-size: 2.5rem;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    --rule-y: 1.6875rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding-bottom: var(--line);
   }
-  .tagline { margin: 0 0 1rem; font-size: 1.3rem; line-height: 1.4; font-weight: 600; }
-  .lede { margin: 0 0 1.5rem; color: var(--muted); }
+  .tagline {
+    --rule-y: 1.6875rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  h2 {
+    --rule-y: 1.6875rem;
+    padding-top: var(--line);
+    padding-bottom: var(--line);
+    font-size: 1.375rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    text-wrap: balance;
+  }
+  ul { padding-left: calc(var(--pad-l) + 2ch); list-style: "- " outside; }
+  strong { font-weight: 700; }
+
+  a {
+    color: var(--ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  a:visited { color: var(--ink-visited); }
+  a:hover { background: var(--select); text-decoration-thickness: 2px; }
+  a:focus-visible, pre:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
   .button {
     display: inline-block;
-    padding: 0.7rem 1.2rem;
-    border-radius: 6px;
-    background: var(--accent);
-    color: var(--accent-text);
-    font-weight: 600;
+    padding: 0 1.25rem;
+    border: 3px solid var(--ink);
+    font-weight: 700;
+    line-height: calc(var(--line) * 1.5 - 6px);
     text-decoration: none;
+    color: var(--ink);
+    background: var(--paper);
   }
-  .button:hover, .button:focus { text-decoration: underline; }
-  section { padding: 2rem 0; border-top: 1px solid var(--line); }
-  h2 { margin: 0 0 1rem; font-size: 1.5rem; line-height: 1.25; }
-  p { margin: 0 0 1rem; }
-  ul { margin: 0 0 1rem; padding-left: 1.25rem; }
-  li { margin-bottom: 0.4rem; }
-  a { color: var(--accent); }
-  code, pre {
-    font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
-    font-size: 0.875rem;
+  .button:visited { color: var(--ink); }
+  .button:hover { background: var(--ink); color: var(--paper); }
+  .button:active { transform: translateY(1px); }
+  p.action { padding-bottom: calc(var(--line) * 0.5); line-height: calc(var(--line) * 1.5); }
+
+  code {
+    font-family: inherit;
+    font-size: inherit;
+    background: var(--wash);
+    padding: 0 0.25em;
   }
-  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+  .typed { --rule-y: 1.5rem; }
   pre {
-    margin: 0 0 1rem;
-    padding: 0.9rem 1rem;
-    background: var(--code-bg);
-    border: 1px solid var(--line);
-    border-radius: 6px;
+    margin: 0;
+    padding: 0 1rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: var(--line);
     overflow-x: auto;
-    line-height: 1.5;
+    scrollbar-color: var(--rule) var(--paper);
+    background: var(--wash);
   }
   pre code { background: none; padding: 0; }
-  .table-wrap { overflow-x: auto; margin: 0 0 1rem; }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--line);
+
+  /* The marker's hand. Red is used for nothing else. */
+  .marked {
+    text-decoration: underline;
+    text-decoration-color: var(--marker);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
   }
-  th, td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--line); text-align: left; }
-  tr:last-child th, tr:last-child td { border-bottom: none; }
-  tbody th { font-weight: 400; }
-  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-  thead th { font-size: 0.85rem; color: var(--muted); }
+  .score-slot { padding-bottom: var(--line); }
+  .score {
+    position: relative;
+    width: 11.5rem;
+    margin-left: auto;
+    margin-right: 0.75rem;
+    transform: rotate(-6deg);
+    color: var(--marker);
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    text-align: center;
+  }
+  .score-figure {
+    position: relative;
+    display: block;
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: calc(var(--line) * 3);
+    font-variant-numeric: lining-nums;
+  }
+  .score-figure::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 4px solid var(--marker);
+    border-radius: 52% 48% 50% 50% / 55% 50% 50% 45%;
+  }
+  .score-note {
+    display: block;
+    font-size: 1.125rem;
+    line-height: var(--line);
+  }
   .note {
-    margin: 0 0 1rem;
-    padding: 0.9rem 1rem;
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    border-radius: 6px;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--marker);
+    border-radius: 14rem 1rem 12rem 1rem / 1rem 12rem 1rem 14rem;
+    background-color: var(--paper);
+    background-image: var(--ruled);
+    background-size: 100% var(--line);
+    background-origin: content-box;
+    background-clip: padding-box;
   }
-  .note p:last-child { margin-bottom: 0; }
-  footer { padding-top: 1.5rem; padding-bottom: 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
-  @media (max-width: 30rem) {
-    header.hero { padding-top: 2.25rem; }
-    h1 { font-size: 2rem; }
-    .tagline { font-size: 1.15rem; }
+
+  .scroll { overflow-x: auto; scrollbar-color: var(--rule) var(--paper); }
+  table { border-collapse: collapse; font-size: 0.9375rem; font-variant-numeric: tabular-nums lining-nums; }
+  th, td { padding: 0 2ch 0 0; text-align: left; font-weight: 400; white-space: nowrap; }
+  thead th { font-weight: 700; }
+  .num { text-align: right; }
+  .mk { padding-right: 0; width: 2rem; }
+  .tick, .cross {
+    position: relative;
+    display: inline-block;
+    width: 1.125rem;
+    height: 1.125rem;
+    vertical-align: -0.2rem;
+  }
+  .tick::before {
+    content: "";
+    position: absolute;
+    left: 0.35rem;
+    top: -0.1rem;
+    width: 0.5rem;
+    height: 1rem;
+    border-right: 3px solid var(--marker);
+    border-bottom: 3px solid var(--marker);
+    transform: rotate(40deg);
+  }
+  .cross::before, .cross::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 1.125rem;
+    height: 3px;
+    background: var(--marker);
+    transform: rotate(45deg);
+  }
+  .cross::after { transform: rotate(-45deg); }
+
+  @media (min-width: 48rem) {
+    :root { --margin-x: 5rem; --gutter: 2rem; }
+    body { font-size: 1.125rem; }
+    .sheet { --pad-l: calc(var(--margin-x) + 2rem); }
+    h1 { font-size: 1.625rem; }
+    p.tagline {
+      --rule-y: 0.375rem;
+      font-size: 2.5rem;
+      line-height: calc(var(--line) * 2);
+      letter-spacing: -0.02em;
+    }
+    h2 { font-size: 1.5rem; }
+    pre { font-size: 0.9375rem; }
+    .typed { --measure: 52rem; }
+    table { font-size: inherit; }
+    .score { width: 15rem; margin-right: 0; }
+    .score-figure { font-size: 3.5rem; line-height: calc(var(--line) * 4); }
+    .score-note { font-size: 1.25rem; }
+  }
+  @media (min-width: 80rem) {
+    :root { --margin-x: 9rem; }
+    p.tagline { padding-right: max(22rem, calc(100% - var(--pad-l) - 50rem)); }
+    .score-slot {
+      position: absolute;
+      top: calc(var(--line) * -0.5);
+      right: 2rem;
+      padding: 0;
+      background: none;
+    }
+    .score { width: 17rem; }
+    .score-figure { font-size: 4rem; line-height: calc(var(--line) * 5); }
+    .score-note { font-size: 1.375rem; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .score-figure::before {
+      -webkit-mask-image: conic-gradient(from -120deg, #000 var(--sweep), transparent 0);
+      mask-image: conic-gradient(from -120deg, #000 var(--sweep), transparent 0);
+      animation: ring 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+    }
+    @keyframes ring {
+      from { --sweep: 0deg; }
+      to { --sweep: 360deg; }
+    }
+  }
+
+  @media print {
+    body { background-image: none; font-size: 10.5pt; }
+    .sheet { --pad-l: 0px; padding: 0; }
+    .score-figure::before { animation: none; -webkit-mask-image: none; mask-image: none; }
+    pre { overflow: visible; white-space: pre-wrap; }
+    h2, pre, .note, table { break-inside: avoid; }
+    h2 { break-after: avoid; }
   }
 </style>
 </head>
 <body>
+<div class="sheet">
 
-<header class="hero">
+<header>
   <h1>fraudsense</h1>
   <p class="tagline">A shortlist of the transactions worth a second look, each with the reason it was picked.</p>
-  <p class="lede">fraudsense is a command-line program. You give it a CSV export of transactions. It gives back the ones that look unusual for the customer who made them, with a risk score and a one-line reason in plain words.</p>
-  <a class="button" href="https://github.com/esst-prog2/fraudsense">Get it on GitHub</a>
+  <div class="score-slot" aria-hidden="true">
+    <div class="score">
+      <span class="score-figure">68/157</span>
+      <span class="score-note">missed more than half</span>
+    </div>
+  </div>
+  <p>fraudsense is a command-line program. You give it a CSV export of transactions. It gives back the ones that look unusual for the customer who made them, with a risk score and a one-line reason in plain words.</p>
+  <p class="action"><a class="button" href="https://github.com/esst-prog2/fraudsense">Get it on GitHub</a></p>
 </header>
 
 <main>
@@ -136,9 +308,9 @@
     <li><strong>Burst of activity.</strong> The customer made 5 or more transactions within 10 minutes.</li>
   </ul>
   <p>Every flagged transaction comes with the reason it was flagged:</p>
-<pre><code>Transaction T00101 - risk score 0.89
-  amount $622.04 is 7.2x this customer's average ($86)
-  7 transactions in the last 10 minutes (rule fires at 5)</code></pre>
+<div class="typed"><pre><code>Transaction T00101 - risk score 0.89
+  <span class="marked">amount $622.04 is 7.2x this customer's average ($86)</span>
+  <span class="marked">7 transactions in the last 10 minutes (rule fires at 5)</span></code></pre></div>
   <p>There is no model to trust blindly. If a transaction is on the list, you can see which rule put it there and by how much.</p>
 </section>
 
@@ -154,15 +326,15 @@
 <section id="try">
   <h2>How to try it</h2>
   <p>You need Python 3.10 or newer. There is nothing else to install.</p>
-<pre><code>git clone https://github.com/esst-prog2/fraudsense.git
+<div class="typed"><pre><code>git clone https://github.com/esst-prog2/fraudsense.git
 cd fraudsense
-python fraudsense.py score data/sample_transactions.csv</code></pre>
+python fraudsense.py score data/sample_transactions.csv</code></pre></div>
   <p>This scores the 500 sample transactions that come with the repository and prints:</p>
-<pre><code>Scored 500 transactions in 0.04s.
+<div class="typed"><pre><code>Scored 500 transactions in 0.04s.
 18 flagged as high-risk (score &gt; 0.75).
-Report written to reports/fraud_report.csv.</code></pre>
+Report written to reports/fraud_report.csv.</code></pre></div>
   <p>The time on the first line varies from run to run. Open <code>reports/fraud_report.csv</code> to see the 18 flagged transactions with their scores and reasons. To see why one of them was flagged:</p>
-<pre><code>python fraudsense.py explain --id T00101</code></pre>
+<div class="typed"><pre><code>python fraudsense.py explain --id T00101</code></pre></div>
   <p>To use your own file, pass it to <code>score</code>. It needs four columns: <code>transaction_id</code>, <code>customer_id</code>, <code>amount</code> and <code>timestamp</code>. If one is missing, the program stops and names the missing column.</p>
   <p>The sample file is synthetic, with unusual transactions planted in it on purpose. No real customer data is in the repository.</p>
 </section>
@@ -171,38 +343,36 @@ Report written to reports/fraud_report.csv.</code></pre>
   <h2>How well it works: the honest scoreboard</h2>
   <p>The sample file is easy, because the unusual transactions were planted for the rules to find. A fairer test is data the rules were not written for.</p>
   <p>fraudsense was run on 26,658 transactions from 20 customers in the <a href="https://www.kaggle.com/datasets/kartik2112/fraud-detection">Sparkov credit card dataset</a>. That dataset is simulated, not real bank data, and each transaction is labeled as fraud or not fraud. 157 of the 26,658 are fraud.</p>
-  <div class="table-wrap">
+  <div class="tally"><div class="scroll">
     <table>
       <thead>
-        <tr><th scope="col">Result</th><th scope="col" class="num">Count</th></tr>
+        <tr><td></td><th scope="col" class="num">Count</th><td></td></tr>
       </thead>
       <tbody>
-        <tr><th scope="row">Transactions flagged</th><td class="num">500</td></tr>
-        <tr><th scope="row">Flagged and really fraud</th><td class="num">68</td></tr>
-        <tr><th scope="row">Flagged but not fraud</th><td class="num">432</td></tr>
-        <tr><th scope="row">Fraud that was missed</th><td class="num">89</td></tr>
+        <tr><th scope="row">Transactions flagged</th><td class="num">500</td><td class="mk"></td></tr>
+        <tr><th scope="row">Flagged and really fraud</th><td class="num">68</td><td class="mk" aria-hidden="true"><span class="tick"></span></td></tr>
+        <tr><th scope="row">Flagged but not fraud</th><td class="num">432</td><td class="mk" aria-hidden="true"><span class="cross"></span></td></tr>
+        <tr><th scope="row">Fraud that was missed</th><td class="num">89</td><td class="mk" aria-hidden="true"><span class="cross"></span></td></tr>
       </tbody>
     </table>
-  </div>
+  </div></div>
   <ul>
-    <li><strong>Precision 0.136.</strong> About 1 flagged transaction in 7 was really fraud.</li>
-    <li><strong>Recall 0.433.</strong> It caught 68 of the 157 frauds, and missed more than half.</li>
+    <li><strong class="marked">Precision 0.136.</strong> About 1 flagged transaction in 7 was really fraud.</li>
+    <li><strong class="marked">Recall 0.433.</strong> It caught 68 of the 157 frauds, and missed more than half.</li>
     <li>All 500 flags came from the unusual-amount rule. The burst rule did not fire at all on this data.</li>
   </ul>
-  <div class="note">
-    <p>These are weak results, and they are stated here on purpose. The thresholds, 5 times the average and 5 transactions in 10 minutes, are starting values. They have not been tuned or validated. Treat the shortlist as a place to start looking, not as a verdict.</p>
-  </div>
+  <div class="remark"><p class="note">These are weak results, and they are stated here on purpose. The thresholds, 5 times the average and 5 transactions in 10 minutes, are starting values. They have not been tuned or validated. Treat the shortlist as a place to start looking, not as a verdict.</p></div>
   <p>You can reproduce the numbers yourself. The labeled slice is in the repository:</p>
-<pre><code>python fraudsense.py evaluate data/spike_slice.csv</code></pre>
+<div class="typed"><pre><code>python fraudsense.py evaluate data/spike_slice.csv</code></pre></div>
   <p>It prints the same measurement at five score cutoffs:</p>
-<pre><code>Evaluated 26658 transactions against the is_fraud labels: 157 fraud, 26501 not fraud.
+<div class="typed"><pre tabindex="0"><code>Evaluated 26658 transactions against the is_fraud labels: 157 fraud, 26501 not fraud.
 
 cutoff  flagged  TP   FP   FN  precision  recall     F1
   0.75      500  68  432   89      0.136   0.433  0.207
   0.80      500  68  432   89      0.136   0.433  0.207
   0.85      291  55  236  102      0.189   0.350  0.246
   0.90      223  52  171  105      0.233   0.331  0.274
-  0.95      175  48  127  109      0.274   0.306  0.289</code></pre>
+  0.95      175  48  127  109      0.274   0.306  0.289</code></pre></div>
   <p>TP is fraud that was flagged, FP is a false alarm, and FN is fraud that was missed. A stricter cutoff raises fewer false alarms and misses more fraud: at 0.95 about 1 flag in 4 is real, but only 48 of the 157 frauds are caught.</p>
 </section>
 
@@ -213,9 +383,6 @@ cutoff  flagged  TP   FP   FN  precision  recall     F1
 
 </main>
 
-<footer>
-  <p>fraudsense is a command-line program. This page describes it; the program itself is in the <a href="https://github.com/esst-prog2/fraudsense">GitHub repository</a>.</p>
-</footer>
-
+</div>
 </body>
 </html>
