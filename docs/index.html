@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fraudsense: explainable fraud shortlist for transaction files</title>
+<meta name="description" content="fraudsense is a command-line program that reads a CSV of transactions and gives back the ones worth a second look, each with a risk score and a plain-words reason.">
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --text: #1d2327;
+    --muted: #5a646b;
+    --line: #dcd9d1;
+    --accent: #0b5c4a;
+    --accent-text: #ffffff;
+    --code-bg: #f1efe9;
+    --warn-bg: #fdf3dc;
+    --warn-line: #d9a520;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14181a;
+      --surface: #1c2224;
+      --text: #e7e9e6;
+      --muted: #a3adb1;
+      --line: #343c40;
+      --accent: #5fd0b1;
+      --accent-text: #0d1b17;
+      --code-bg: #232a2d;
+      --warn-bg: #2d2714;
+      --warn-line: #c9992a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  main, header.hero, footer {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  header.hero { padding-top: 3.5rem; padding-bottom: 2rem; }
+  h1 {
+    margin: 0 0 0.75rem;
+    font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 2.5rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .tagline { margin: 0 0 1rem; font-size: 1.3rem; line-height: 1.4; font-weight: 600; }
+  .lede { margin: 0 0 1.5rem; color: var(--muted); }
+  .button {
+    display: inline-block;
+    padding: 0.7rem 1.2rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .button:hover, .button:focus { text-decoration: underline; }
+  section { padding: 2rem 0; border-top: 1px solid var(--line); }
+  h2 { margin: 0 0 1rem; font-size: 1.5rem; line-height: 1.25; }
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.25rem; }
+  li { margin-bottom: 0.4rem; }
+  a { color: var(--accent); }
+  code, pre {
+    font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 0.875rem;
+  }
+  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+  pre {
+    margin: 0 0 1rem;
+    padding: 0.9rem 1rem;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  .table-wrap { overflow-x: auto; margin: 0 0 1rem; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  th, td { padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--line); text-align: left; }
+  tr:last-child th, tr:last-child td { border-bottom: none; }
+  tbody th { font-weight: 400; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  thead th { font-size: 0.85rem; color: var(--muted); }
+  .note {
+    margin: 0 0 1rem;
+    padding: 0.9rem 1rem;
+    background: var(--warn-bg);
+    border-left: 4px solid var(--warn-line);
+    border-radius: 0 6px 6px 0;
+  }
+  .note p:last-child { margin-bottom: 0; }
+  footer { padding-top: 1.5rem; padding-bottom: 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
+  @media (max-width: 30rem) {
+    header.hero { padding-top: 2.25rem; }
+    h1 { font-size: 2rem; }
+    .tagline { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>fraudsense</h1>
+  <p class="tagline">A shortlist of the transactions worth a second look, each with the reason it was picked.</p>
+  <p class="lede">fraudsense is a command-line program. You give it a CSV export of transactions. It gives back the ones that look unusual for the customer who made them, with a risk score and a one-line reason in plain words.</p>
+  <a class="button" href="https://github.com/esst-prog2/fraudsense">Get it on GitHub</a>
+</header>
+
+<main>
+
+<section id="what">
+  <h2>What it is for</h2>
+  <p>Finding fraud in a transaction export by hand means reading every row. fraudsense reads every row for you and hands back a short list to check.</p>
+  <p>It compares each transaction with the same customer's own history and applies two rules:</p>
+  <ul>
+    <li><strong>Unusual amount.</strong> The amount is at least 5 times that customer's average.</li>
+    <li><strong>Burst of activity.</strong> The customer made 5 or more transactions within 10 minutes.</li>
+  </ul>
+  <p>Every flagged transaction comes with the reason it was flagged:</p>
+<pre><code>Transaction T00101 - risk score 0.89
+  amount $622.04 is 7.2x this customer's average ($86)
+  7 transactions in the last 10 minutes (rule fires at 5)</code></pre>
+  <p>There is no model to trust blindly. If a transaction is on the list, you can see which rule put it there and by how much.</p>
+</section>
+
+<section id="who">
+  <h2>Who it is for</h2>
+  <ul>
+    <li>Anyone who has to go through a transaction export looking for fraud and wants a shortlist instead of the whole file.</li>
+    <li>Students and teachers who want a small, readable example of rule-based fraud detection with honest numbers attached.</li>
+  </ul>
+  <p>It is not a production fraud system. It does not run in real time, connect to a bank or payment system, or block anything. It reads a file and writes a report.</p>
+</section>
+
+<section id="try">
+  <h2>How to try it</h2>
+  <p>You need Python 3.10 or newer. There is nothing else to install.</p>
+<pre><code>git clone https://github.com/esst-prog2/fraudsense.git
+cd fraudsense
+python fraudsense.py score data/sample_transactions.csv</code></pre>
+  <p>This scores the 500 sample transactions that come with the repository and prints:</p>
+<pre><code>Scored 500 transactions in 0.04s.
+18 flagged as high-risk (score &gt; 0.75).
+Report written to reports/fraud_report.csv.</code></pre>
+  <p>The time on the first line varies from run to run. Open <code>reports/fraud_report.csv</code> to see the 18 flagged transactions with their scores and reasons. To see why one of them was flagged:</p>
+<pre><code>python fraudsense.py explain --id T00101</code></pre>
+  <p>To use your own file, pass it to <code>score</code>. It needs four columns: <code>transaction_id</code>, <code>customer_id</code>, <code>amount</code> and <code>timestamp</code>. If one is missing, the program stops and names the missing column.</p>
+  <p>The sample file is synthetic, with unusual transactions planted in it on purpose. No real customer data is in the repository.</p>
+</section>
+
+<section id="scoreboard">
+  <h2>How well it works: the honest scoreboard</h2>
+  <p>The sample file is easy, because the unusual transactions were planted for the rules to find. A fairer test is data the rules were not written for.</p>
+  <p>fraudsense was run on 26,658 transactions from 20 customers in the <a href="https://www.kaggle.com/datasets/kartik2112/fraud-detection">Sparkov credit card dataset</a>. That dataset is simulated, not real bank data, and each transaction is labeled as fraud or not fraud. 157 of the 26,658 are fraud.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th scope="col">Result</th><th scope="col" class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Transactions flagged</th><td class="num">500</td></tr>
+        <tr><th scope="row">Flagged and really fraud</th><td class="num">68</td></tr>
+        <tr><th scope="row">Flagged but not fraud</th><td class="num">432</td></tr>
+        <tr><th scope="row">Fraud that was missed</th><td class="num">89</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><strong>Precision 0.136.</strong> About 1 flagged transaction in 7 was really fraud.</li>
+    <li><strong>Recall 0.433.</strong> It caught 68 of the 157 frauds, and missed more than half.</li>
+    <li>All 500 flags came from the unusual-amount rule. The burst rule did not fire at all on this data.</li>
+  </ul>
+  <div class="note">
+    <p>These are weak results, and they are stated here on purpose. The thresholds, 5 times the average and 5 transactions in 10 minutes, are starting values. They have not been tuned or validated. Treat the shortlist as a place to start looking, not as a verdict.</p>
+  </div>
+  <p>You can reproduce the numbers yourself. The labeled slice is in the repository:</p>
+<pre><code>python fraudsense.py evaluate data/spike_slice.csv</code></pre>
+  <p>It prints the same measurement at five score cutoffs:</p>
+<pre><code>Evaluated 26658 transactions against the is_fraud labels: 157 fraud, 26501 not fraud.
+
+cutoff  flagged  TP   FP   FN  precision  recall     F1
+  0.75      500  68  432   89      0.136   0.433  0.207
+  0.80      500  68  432   89      0.136   0.433  0.207
+  0.85      291  55  236  102      0.189   0.350  0.246
+  0.90      223  52  171  105      0.233   0.331  0.274
+  0.95      175  48  127  109      0.274   0.306  0.289</code></pre>
+  <p>TP is fraud that was flagged, FP is a false alarm, and FN is fraud that was missed. A stricter cutoff raises fewer false alarms and misses more fraud: at 0.95 about 1 flag in 4 is real, but only 48 of the 157 frauds are caught.</p>
+</section>
+
+<section id="get">
+  <h2>Get it</h2>
+  <p>The code, the sample data and the tests are on GitHub.</p>
+  <a class="button" href="https://github.com/esst-prog2/fraudsense">github.com/esst-prog2/fraudsense</a>
+</section>
+
+</main>
+
+<footer>
+  <p>fraudsense is a command-line program. This page describes it; the program itself is in the <a href="https://github.com/esst-prog2/fraudsense">GitHub repository</a>.</p>
+</footer>
+
+</body>
+</html>
