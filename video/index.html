@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>fraudsense: the honest scoreboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      /* System fonts only, as on the promo page. Faces are read from this machine. */
+      @font-face { font-family: "FS Mono"; src: local("Courier New"), local("CourierNewPSMT"); font-weight: 400; }
+      @font-face { font-family: "FS Mono"; src: local("Courier New Bold"), local("CourierNewPS-BoldMT"); font-weight: 700; }
+      @font-face { font-family: "FS Serif"; src: local("Georgia Italic"), local("Georgia-Italic"); font-style: italic; font-weight: 400; }
+
+      :root {
+        --paper: #ffffff;
+        --ink: #1c2a4a;
+        --marker: #c8102e;
+        --rule: #a9c4e0;
+        --margin-line: #e7a1ab;
+        --wash: rgba(169, 196, 224, 0.24);
+        --mono: "FS Mono", monospace;
+        --serif: "FS Serif", serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--paper); color: var(--ink);
+        font-family: var(--mono);
+      }
+      #root { position: relative; width: 100%; height: 100%; background: var(--paper); }
+
+      /* Ruled paper with a margin line, kept faint so the dots read first. */
+      #paper {
+        position: absolute; inset: 0; z-index: 0;
+        background-image:
+          linear-gradient(to right, transparent 150px, var(--margin-line) 150px, var(--margin-line) 152px, transparent 152px),
+          repeating-linear-gradient(to bottom, transparent 0 63px, rgba(169, 196, 224, 0.45) 63px 64px);
+      }
+      #dots { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; z-index: 1; }
+
+      .scene { position: absolute; inset: 0; z-index: 2; }
+      .in { position: absolute; inset: 0; }
+      .abs { position: absolute; }
+
+      .cap { position: absolute; left: 200px; width: 1520px; font-weight: 700; font-size: 56px; line-height: 70px; }
+      .sub { position: absolute; left: 200px; width: 1520px; font-weight: 400; font-size: 36px; line-height: 48px; }
+      .red { color: var(--marker); }
+      .marker { font-family: var(--serif); font-style: italic; color: var(--marker); }
+
+      /* Scene 1: file to shortlist */
+      #s1-file { left: 200px; top: 430px; width: 380px; font-size: 28px; line-height: 38px; }
+      #s1-file-label { font-size: 28px; line-height: 38px; opacity: 0.7; margin-bottom: 8px; display: block; }
+      .row { display: block; white-space: pre; }
+      #s1-hit { position: relative; display: inline-block; }
+      #s1-hit-line { position: absolute; left: -4px; right: -4px; bottom: 2px; height: 4px; background: var(--marker); transform-origin: left center; }
+      #s1-arrow { left: 584px; top: 600px; width: 100px; font-size: 64px; line-height: 64px; }
+      #s1-card {
+        left: 690px; top: 560px; width: 1040px; padding: 22px 26px;
+        border: 3px solid var(--marker); background: var(--paper);
+        font-size: 28px; line-height: 40px; white-space: pre;
+      }
+      #s1-card b { font-weight: 700; }
+      #s1-flag { left: 700px; top: 466px; font-size: 64px; line-height: 72px; }
+
+      /* Scenes 2 to 4: the field */
+      #s2-fraud { left: 1260px; top: 470px; width: 460px; font-size: 56px; line-height: 70px; font-weight: 700; }
+      #foot { position: absolute; z-index: 3; inset: 0; }
+      #foot-text { position: absolute; left: 200px; top: 944px; font-size: 28px; line-height: 32px; }
+
+      #stats { position: absolute; z-index: 3; inset: 0; }
+      #tray-label { left: 1262px; top: 268px; font-size: 44px; line-height: 52px; }
+      #stat-list { left: 1262px; top: 720px; width: 460px; font-size: 36px; line-height: 50px; font-weight: 700; }
+      .stat { display: block; position: relative; white-space: nowrap; }
+      .num { display: inline-block; position: relative; width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+      .num span { position: absolute; right: 0; top: 0; }
+      .num .ghost { position: static; visibility: hidden; }
+      .key { display: inline-block; width: 22px; height: 22px; border-radius: 50%; margin-right: 12px; vertical-align: -2px; }
+      .key-ink { background: var(--ink); }
+      .key-red { background: var(--marker); }
+      .key-ring { border: 3px solid var(--marker); background: transparent; }
+      .key-none { background: transparent; }
+
+      /* Scene 5: the real output */
+      #s5-out {
+        left: 200px; top: 300px; width: 1520px; padding: 26px 30px;
+        background: var(--wash); font-size: 28px; line-height: 40px; white-space: pre;
+      }
+      .hl { position: relative; display: inline-block; }
+      .hl i { position: absolute; left: -6px; right: -6px; bottom: 0; height: 4px; background: var(--marker); transform-origin: left center; }
+
+      /* Scene 6: what it is and is not */
+      .say { position: absolute; left: 200px; width: 1520px; font-size: 48px; line-height: 64px; font-weight: 700; }
+      #s6-name { left: 200px; top: 720px; font-size: 96px; line-height: 110px; font-weight: 700; }
+      #s6-url { left: 200px; top: 840px; font-size: 40px; line-height: 52px; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="30"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="paper"></div>
+      <canvas id="dots" width="1920" height="1080"></canvas>
+
+      <!-- 1. What fraudsense does, and what a flag is (0 to 6 s) -->
+      <div id="s1" class="clip scene" data-start="0" data-duration="6.3" data-track-index="1">
+        <div id="s1-in" class="in">
+          <p id="s1-a" class="cap" style="top: 110px">fraudsense reads a file of transactions</p>
+          <p id="s1-b" class="cap" style="top: 180px">and hands back a shortlist worth a second look, each with its reason.</p>
+          <div id="s1-file" class="abs">
+            <span id="s1-file-label">sample file, 500 rows</span>
+            <span id="s1-r1" class="row">T00095  C037   $88.95</span>
+            <span id="s1-r2" class="row">T00096  C037   $93.33</span>
+            <span id="s1-r3" class="row">T00097  C037   $65.94</span>
+            <span id="s1-r4" class="row">T00098  C037  $106.50</span>
+            <span id="s1-r5" class="row">T00099  C037  $110.03</span>
+            <span id="s1-r6" class="row">T00100  C037   $85.00</span>
+            <span id="s1-r7" class="row"><span id="s1-hit">T00101  C037  $622.04<i id="s1-hit-line"></i></span></span>
+            <span id="s1-r8" class="row">T00102  C013  $513.76</span>
+          </div>
+          <div id="s1-arrow" class="abs red">&rarr;</div>
+          <div id="s1-flag" class="abs marker">a flag</div>
+          <div id="s1-card" class="abs"><b>Transaction T00101 - risk score 0.89</b>
+  amount $622.04 is 7.2x this customer's average ($86)
+  7 transactions in the last 10 minutes (rule fires at 5)</div>
+          <p id="s1-c" class="cap" style="top: 870px">Each item on the shortlist is a <span class="marker">flag</span>.</p>
+        </div>
+      </div>
+
+      <!-- 2. The labeled data (6 to 10.5 s) -->
+      <div id="s2" class="clip scene" data-start="6.3" data-duration="4.2" data-track-index="1">
+        <div id="s2-in" class="in">
+          <p id="s2-a" class="cap" style="top: 110px">26,658 transactions from 20 customers.</p>
+          <p id="s2-sub" class="sub" style="top: 186px">Sparkov dataset: simulated, not real bank data.</p>
+          <p id="s2-fraud" class="abs red">157 of them<br />are fraud.</p>
+        </div>
+      </div>
+
+      <!-- 3. Cutoff 0.75 (10.5 to 15.5 s) -->
+      <div id="s3" class="clip scene" data-start="10.5" data-duration="5" data-track-index="1">
+        <div id="s3-in" class="in">
+          <p id="s3-a" class="cap" style="top: 110px">At cutoff 0.75, fraudsense flags 500.</p>
+          <p id="s3-sub" class="sub" style="top: 186px">The flagged ones move to the shortlist.</p>
+        </div>
+      </div>
+
+      <!-- 4. Cutoff 0.95 (15.5 to 20.5 s) -->
+      <div id="s4" class="clip scene" data-start="15.5" data-duration="5" data-track-index="1">
+        <div id="s4-in" class="in">
+          <p id="s4-a" class="cap" style="top: 110px">A stricter cutoff, 0.95: 175 flags.</p>
+          <p id="s4-sub" class="sub" style="top: 186px">Fewer false alarms, but more fraud missed.</p>
+        </div>
+      </div>
+
+      <!-- Shortlist counts, shared by scenes 3 and 4 -->
+      <div id="stats" class="clip" data-start="10.5" data-duration="10" data-track-index="2">
+        <div id="stats-in" class="in">
+          <p id="tray-label" class="abs marker">the shortlist</p>
+          <div id="stat-list" class="abs">
+            <span id="st-flag" class="stat"><i class="key key-none"></i><span class="num"><span class="ghost">0000</span><span class="v75">500</span><span class="v95">175</span></span> flagged</span>
+            <span id="st-tp" class="stat red"><i class="key key-red"></i><span class="num"><span class="ghost">0000</span><span class="v75">68</span><span class="v95">48</span></span> really fraud</span>
+            <span id="st-fp" class="stat"><i class="key key-ink"></i><span class="num"><span class="ghost">0000</span><span class="v75">432</span><span class="v95">127</span></span> false alarms</span>
+            <span id="st-fn" class="stat red"><i class="key key-ring"></i><span class="num"><span class="ghost">0000</span><span class="v75">89</span><span class="v95">109</span></span> fraud missed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footnote under the dots (6 to 20.5 s) -->
+      <div id="foot" class="clip" data-start="6" data-duration="14.5" data-track-index="3">
+        <p id="foot-text">Every count is real. Dot positions are illustrative.</p>
+      </div>
+
+      <!-- 5. The real output (20.5 to 24 s) -->
+      <div id="s5" class="clip scene" data-start="20.5" data-duration="3.8" data-track-index="1">
+        <div id="s5-in" class="in">
+          <p id="s5-a" class="cap" style="top: 150px">Real output. Every number comes from it.</p>
+          <div id="s5-out" class="abs">$ python fraudsense.py evaluate data/spike_slice.csv
+Evaluated 26658 transactions against the is_fraud labels: 157 fraud, 26501 not fraud.
+
+cutoff  flagged  TP   FP   FN  precision  recall     F1
+<span class="hl">  0.75      500  68  432   89      0.136   0.433  0.207<i id="s5-hl1"></i></span>
+  0.80      500  68  432   89      0.136   0.433  0.207
+  0.85      291  55  236  102      0.189   0.350  0.246
+  0.90      223  52  171  105      0.233   0.331  0.274
+<span class="hl">  0.95      175  48  127  109      0.274   0.306  0.289<i id="s5-hl2"></i></span></div>
+        </div>
+      </div>
+
+      <!-- 6. What the results mean, and what it does not do (24 to 30 s) -->
+      <div id="s6" class="clip scene" data-start="24.3" data-duration="5.7" data-track-index="1">
+        <div id="s6-in" class="in">
+          <p id="s6-a" class="say" style="top: 150px">Weak results: <span class="red">more than half</span> the fraud was missed.</p>
+          <p id="s6-b" class="say" style="top: 240px">The thresholds are untuned starting values.</p>
+          <p id="s6-c" class="say" style="top: 380px">It reads a file and writes a report.</p>
+          <p id="s6-d" class="say" style="top: 450px">Not real-time. No bank connection. Blocks nothing.</p>
+          <p id="s6-name" class="abs">fraudsense</p>
+          <p id="s6-url" class="abs">github.com/esst-prog2/fraudsense</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---- The one data module. Every count comes from
+      // `python fraudsense.py evaluate data/spike_slice.csv` (cutoffs 0.75 and 0.95).
+      const DATA = {
+        total: 26658, fraud: 157,
+        c75: { flagged: 500, tp: 68, fp: 432, fn: 89 },
+        c95: { flagged: 175, tp: 48, fp: 127, fn: 109 },
+      };
+      for (const c of [DATA.c75, DATA.c95]) {
+        if (c.tp + c.fp !== c.flagged || c.tp + c.fn !== DATA.fraud) throw new Error("inconsistent counts");
+      }
+
+      // ---- Seeded layout (positions are illustrative only).
+      function mulberry32(a) {
+        return function () {
+          a |= 0; a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      const rand = mulberry32(20261121);
+      const N = DATA.total;
+      const cell = new Int32Array(N);
+      for (let i = 0; i < N; i++) cell[i] = i;
+      for (let i = N - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = cell[i]; cell[i] = cell[j]; cell[j] = t; }
+
+      // Dot k's role: k < 157 fraud (first 48 caught at both cutoffs, next 20 only at 0.75, rest missed);
+      // the next 432 are false alarms at 0.75, the first 127 of them also at 0.95.
+      const F = DATA.fraud;
+      const isFraud = (k) => k < F;
+      const flag75 = (k) => k < DATA.c75.tp || (k >= F && k < F + DATA.c75.fp);
+      const flag95 = (k) => k < DATA.c95.tp || (k >= F && k < F + DATA.c95.fp);
+
+      const FX = 200, FY = 312, COLS = 203, GAP = 4.72;
+      const fieldRows = Math.ceil(N / COLS);
+      const fieldX = (k) => FX + (cell[k] % COLS) * GAP;
+      const fieldY = (k) => FY + Math.floor(cell[k] / COLS) * GAP;
+      const TX = 1270, TY = 340, TCOLS = 25, TGAP = 18;
+      const slot75 = (k) => (k < F ? k : DATA.c75.tp + (k - F));
+      const slot95 = (k) => (k < F ? k : DATA.c95.tp + (k - F));
+      const slotX = (s) => TX + (s % TCOLS) * TGAP;
+      const slotY = (s) => TY + Math.floor(s / TCOLS) * TGAP;
+
+      const flagged = [];
+      for (let k = 0; k < N; k++) if (flag75(k)) flagged.push(k);
+      const delay75 = new Float32Array(N), delay95 = new Float32Array(N), redDelay = new Float32Array(F);
+      for (const k of flagged) { delay75[k] = rand() * 1.4; delay95[k] = rand() * 0.8; }
+      for (let k = 0; k < F; k++) redDelay[k] = rand() * 0.6;
+
+      // ---- Timings in seconds (root time).
+      const T = { fieldIn: 6.5, fieldDur: 1.0, redIn: 8.2, fly75: 11.0, miss75: 13.8, fly95: 16.0, miss95: 17.9, out: 20.2 };
+
+      const clamp = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
+      const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+      const lerp = (a, b, p) => a + (b - a) * p;
+      const INK = "#1c2a4a", RED = "#c8102e";
+
+      const canvas = document.getElementById("dots");
+      const ctx = canvas.getContext("2d");
+
+      function renderAt(t) {
+        ctx.clearRect(0, 0, 1920, 1080);
+        if (t < T.fieldIn || t > T.out + 0.5) return;
+        ctx.globalAlpha = 1 - clamp((t - T.out) / 0.4);
+        const master = ctx.globalAlpha;
+
+        // Shortlist frame: 20 rows at 0.75, shrinking to 7 rows at 0.95.
+        const frameIn = clamp((t - (T.fly75 - 0.3)) / 0.4);
+        if (frameIn > 0) {
+          const rows75 = Math.ceil(DATA.c75.flagged / TCOLS), rows95 = Math.ceil(DATA.c95.flagged / TCOLS);
+          const rows = lerp(rows75, rows95, ease(clamp((t - T.fly95) / 1.6)));
+          ctx.globalAlpha = master * frameIn;
+          ctx.strokeStyle = INK; ctx.lineWidth = 2;
+          ctx.strokeRect(TX - 16, TY - 16, TCOLS * TGAP + 14, rows * TGAP + 14);
+          ctx.globalAlpha = master;
+        }
+
+        // Grey field, sweeping in row by row.
+        ctx.fillStyle = INK;
+        for (let k = F; k < N; k++) {
+          const row = Math.floor(cell[k] / COLS);
+          const a = clamp((t - T.fieldIn - (row / fieldRows) * T.fieldDur) / 0.25);
+          if (a <= 0) continue;
+          if (flag75(k) && t >= T.fly75 + delay75[k]) continue; // drawn as a moving dot below
+          ctx.globalAlpha = master * a * 0.34;
+          ctx.fillRect(fieldX(k) - 1.3, fieldY(k) - 1.3, 2.6, 2.6);
+        }
+
+        // Fraud dots in the field (before they are flagged, or when missed).
+        for (let k = 0; k < F; k++) {
+          const row = Math.floor(cell[k] / COLS);
+          const shown = clamp((t - T.fieldIn - (row / fieldRows) * T.fieldDur) / 0.25);
+          if (shown <= 0) continue;
+          if (flag75(k) && t >= T.fly75 + delay75[k]) continue;
+          const red = ease(clamp((t - T.redIn - redDelay[k]) / 0.35));
+          const x = fieldX(k), y = fieldY(k);
+          if (red <= 0) {
+            ctx.globalAlpha = master * shown * 0.34; ctx.fillStyle = INK;
+            ctx.fillRect(x - 1.3, y - 1.3, 2.6, 2.6);
+          } else {
+            ctx.globalAlpha = master; ctx.fillStyle = RED;
+            ctx.beginPath(); ctx.arc(x, y, lerp(1.3, 4.6, red), 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        // Flagged dots: field -> shortlist at 0.75, then stay, shuffle up, or fall back at 0.95.
+        for (const k of flagged) {
+          const p1 = ease(clamp((t - T.fly75 - delay75[k]) / 0.8));
+          if (p1 <= 0) continue;
+          const fx = fieldX(k), fy = fieldY(k);
+          const s75x = slotX(slot75(k)), s75y = slotY(slot75(k));
+          let x = lerp(fx, s75x, p1), y = lerp(fy, s75y, p1);
+          let r = lerp(isFraud(k) ? 4.6 : 1.6, 6.5, p1);
+          const p2 = ease(clamp((t - T.fly95 - delay95[k]) / 0.9));
+          if (p2 > 0) {
+            if (flag95(k)) {
+              x = lerp(s75x, slotX(slot95(k)), p2); y = lerp(s75y, slotY(slot95(k)), p2);
+            } else {
+              x = lerp(s75x, fx, p2); y = lerp(s75y, fy, p2);
+              r = lerp(6.5, isFraud(k) ? 4.6 : 1.3, p2);
+            }
+          }
+          const backInField = p2 >= 1 && !flag95(k);
+          ctx.fillStyle = isFraud(k) ? RED : INK;
+          ctx.globalAlpha = master * (isFraud(k) ? 1 : backInField ? 0.34 : 1);
+          if (backInField && !isFraud(k)) { ctx.fillRect(x - 1.3, y - 1.3, 2.6, 2.6); continue; }
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Rings round the fraud that was missed: 89 at 0.75, 109 at 0.95.
+        ctx.strokeStyle = RED; ctx.lineWidth = 2.2;
+        for (let k = 0; k < F; k++) {
+          const missedAt75 = !flag75(k), missedAt95 = !flag95(k);
+          let a = 0;
+          if (missedAt75) a = clamp((t - T.miss75) / 0.4);
+          else if (missedAt95) a = clamp((t - T.miss95) / 0.4);
+          if (a <= 0) continue;
+          ctx.globalAlpha = master * a;
+          ctx.beginPath(); ctx.arc(fieldX(k), fieldY(k), lerp(16, 10, a), 0, Math.PI * 2); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+
+      // ---- Text timeline (absolute seconds).
+      const tl = gsap.timeline({ paused: true });
+      const show = (sel, at, d = 0.35) =>
+        tl.fromTo(sel, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: d, ease: "power2.out" }, at);
+      const fade = (sel, at, d = 0.3) => tl.fromTo(sel, { opacity: 1 }, { opacity: 0, duration: d, ease: "power1.in" }, at);
+
+      // 1
+      show("#s1-a", 0.3);
+      tl.fromTo("#s1-file .row, #s1-file-label", { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.07 }, 0.6);
+      show("#s1-b", 1.3);
+      tl.fromTo("#s1-hit-line", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, 2.2);
+      show("#s1-arrow", 2.5, 0.3);
+      show("#s1-card", 2.6);
+      show("#s1-flag", 3.1);
+      show("#s1-c", 3.4);
+      fade("#s1-in", 6.0);
+      // 2 (scene-local times are root times here: one root timeline)
+      show("#s2-a", 6.4);
+      show("#s2-sub", 6.8);
+      show("#s2-fraud", 8.4);
+      fade("#s2-fraud", 10.2, 0.25);
+      fade("#s2-a, #s2-sub", 10.2, 0.25);
+      // shared footnote
+      tl.fromTo("#foot-text", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 7.0);
+      fade("#foot-text", 20.1);
+      // 3
+      show("#s3-a", 10.55);
+      show("#s3-sub", 11.0);
+      fade("#s3-a, #s3-sub", 15.2, 0.25);
+      show("#tray-label", 10.9);
+      show("#st-flag", 12.4);
+      show("#st-tp", 13.0);
+      show("#st-fp", 13.4);
+      show("#st-fn", 13.9);
+      // numbers switch from 0.75 to 0.95
+      tl.fromTo("#stat-list .v75", { opacity: 1 }, { opacity: 0, duration: 0.25 }, 16.6);
+      tl.fromTo("#st-flag .v95, #st-tp .v95, #st-fp .v95", { opacity: 0 }, { opacity: 1, duration: 0.35 }, 16.85);
+      tl.fromTo("#st-fn .v95", { opacity: 0 }, { opacity: 1, duration: 0.35 }, 18.0);
+      fade("#stats-in", 20.1);
+      // 4
+      show("#s4-a", 15.55);
+      show("#s4-sub", 17.6);
+      fade("#s4-a, #s4-sub", 20.1, 0.3);
+      // 5
+      show("#s5-a", 20.6);
+      show("#s5-out", 20.8);
+      tl.fromTo("#s5-hl1", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 21.5);
+      tl.fromTo("#s5-hl2", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 22.0);
+      fade("#s5-in", 24.0);
+      // 6
+      show("#s6-a", 24.4);
+      show("#s6-b", 25.4);
+      show("#s6-c", 26.3);
+      show("#s6-d", 26.9);
+      show("#s6-name", 27.6);
+      show("#s6-url", 27.8);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
