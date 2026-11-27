@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fraudsense: five slides</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/reveal.css">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1c2a4a;
+    --rule: #c9dbee;
+    --wash: rgba(169, 196, 224, 0.24);
+    --margin-line: #e7a1ab;
+    --marker: #c8102e;
+    --ok: #1d6b3a;
+    --typed: "Courier New", Courier, "Nimbus Mono PS", "Liberation Mono", monospace;
+    --hand: Georgia, "Times New Roman", serif;
+  }
+  html, body { background: var(--paper); }
+  .reveal {
+    color: var(--ink);
+    font-family: var(--typed);
+    font-size: 30px;
+    line-height: 1.35;
+  }
+  .reveal .slides { text-align: left; }
+
+  /* Each slide is a sheet of ruled paper with a margin line. */
+  .reveal .slides section {
+    box-sizing: border-box;
+    height: 100%;
+    padding: 34px 56px 30px 100px;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(to right, transparent 70px, var(--margin-line) 70px,
+        var(--margin-line) 72px, transparent 72px),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 39px,
+        var(--rule) 39px, var(--rule) 40px);
+  }
+
+  .kicker {
+    margin: 0 0 6px;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+  .reveal h1, .reveal h2 {
+    margin: 0 0 22px;
+    color: var(--ink);
+    font-family: var(--typed);
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: none;
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.18em;
+  }
+  .reveal h1 { font-size: 72px; }
+  .reveal h2 { font-size: 44px; }
+  .reveal p { margin: 0 0 18px; }
+  .big { font-size: 38px; font-weight: 700; line-height: 1.3; }
+  .small { font-size: 24px; }
+
+  /* The marker's hand. Red is used for the marks only. */
+  .hand {
+    font-family: var(--hand);
+    font-style: italic;
+    color: var(--marker);
+    font-size: 30px;
+    line-height: 1.25;
+  }
+  .marked {
+    text-decoration: underline;
+    text-decoration-color: var(--marker);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.25em;
+  }
+  .ring {
+    display: inline-block;
+    padding: 4px 22px;
+    border: 3px solid var(--marker);
+    border-radius: 50%;
+    transform: rotate(-4deg);
+    font-family: var(--hand);
+    font-style: italic;
+    color: var(--marker);
+  }
+  .tick { color: var(--ok); font-weight: 700; }
+  .cross { color: var(--marker); font-weight: 700; }
+
+  .reveal pre {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 10px 18px;
+    box-shadow: none;
+    background: var(--wash);
+    font-family: var(--typed);
+    font-size: 22px;
+    line-height: 1.45;
+    white-space: pre;
+  }
+  .reveal pre code { padding: 0; max-height: none; font-family: inherit; background: none; }
+  .prompt { font-weight: 700; }
+  code.inline { font-family: var(--typed); background: var(--wash); padding: 0 6px; }
+
+  /* A picture with a short label beside it. */
+  .pair {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 14px 28px;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin: 26px 0 30px;
+  }
+  .box {
+    border: 3px solid var(--ink);
+    padding: 14px 26px;
+    font-weight: 700;
+    font-size: 40px;
+    background: var(--paper);
+  }
+  .box small { display: block; font-size: 22px; font-weight: 400; }
+  .arrow { font-size: 48px; }
+
+  .cols { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 40px; }
+  .left { font-size: 26px; }
+  .nowrap { white-space: nowrap; }
+  .cols > div > p:first-child { margin-top: 0; }
+
+  .step { display: grid; grid-template-columns: 150px 1fr; gap: 0 18px; margin-bottom: 18px; }
+  .when { font-weight: 700; font-size: 24px; padding-top: 4px; }
+
+  .reveal table { border-collapse: collapse; font-size: 26px; margin: 4px 0 22px; }
+  .reveal table th, .reveal table td {
+    border: none;
+    border-bottom: 2px solid var(--rule);
+    padding: 4px 22px 4px 0;
+    text-align: right;
+  }
+  .reveal table th:first-child, .reveal table td:first-child { text-align: left; }
+
+  .reveal ul { margin: 0 0 18px; padding-left: 1.4em; list-style: "- " outside; }
+  .reveal li { margin-bottom: 14px; }
+
+  .reveal a { color: var(--ink); text-decoration: underline; text-underline-offset: 0.18em; }
+  .reveal a:hover { color: var(--ink); background: var(--wash); }
+
+  .foot {
+    position: absolute;
+    left: 100px;
+    right: 56px;
+    bottom: 30px;
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .reveal .progress { color: var(--marker); height: 4px; }
+  .reveal .controls { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 1. For whom, and why -->
+<section>
+  <p class="kicker">1 / 5 &middot; For whom, and why</p>
+  <h1>fraudsense</h1>
+  <p class="big">For whoever has to go through a transaction export by hand, looking for fraud.</p>
+  <div class="flow">
+    <div class="box">500 rows<small>the whole export</small></div>
+    <div class="arrow" aria-hidden="true">&rarr;</div>
+    <div class="box">18 to look at<small>a shortlist</small></div>
+    <div class="hand">each one with<br>the reason it's there</div>
+  </div>
+  <p class="foot">In five minutes: what it flags, how I know the flags are right, and where it is still weak.</p>
+  <aside class="notes">
+    Most transactions are fine. Reading every row of an export to find the few odd ones is slow.
+    fraudsense reads the CSV and hands back a short list, and every item on it says why it is there.
+    Promise: by the end you will know what it flags, how I checked it myself, and where it is weak.
+  </aside>
+</section>
+
+<!-- 2. The demo -->
+<section>
+  <p class="kicker">2 / 5 &middot; The demo, from a real run</p>
+  <h2>Every flag says why</h2>
+  <div class="pair">
+    <pre><code><span class="prompt">$ python fraudsense.py score data/sample_transactions.csv</span>
+Scored 500 transactions in 0.00s.
+<span class="marked">18 flagged as high-risk (score &gt; 0.75).</span>
+Report written to reports/fraud_report.csv.</code></pre>
+    <div class="hand">500 in,<br>18 out</div>
+  </div>
+  <div class="pair fragment">
+    <pre><code><span class="prompt">$ python fraudsense.py explain --id T00101</span>
+Transaction T00101 - risk score 0.89
+  <span class="marked">amount $622.04 is 7.2x this customer's average ($86)</span>
+  <span class="marked">7 transactions in the last 10 minutes (rule fires at 5)</span></code></pre>
+    <div class="hand">the reason,<br>in plain words</div>
+  </div>
+  <p class="small">Two rules: an amount 5&times; the customer's average, or 5+ transactions in 10 minutes. Python standard library only.</p>
+  <aside class="notes">
+    This is output copied from a real run, not a live run.
+    Score: 500 synthetic transactions in, 18 flagged, written to a CSV report.
+    Click: explain one of them. T00101 is 7.2 times this customer's average and the seventh transaction in ten minutes.
+    The point: you never get a score without the reason behind it.
+  </aside>
+</section>
+
+<!-- 3. Why it works -->
+<section>
+  <p class="kicker">3 / 5 &middot; Why it works</p>
+  <h2>I wrote the answer before the test</h2>
+  <div class="cols">
+    <div class="left">
+      <p>A planted test file:</p>
+      <p>15 ordinary buys,<br><span class="nowrap">$42.75 to $58.00</span><br>mean <strong>50.4</strong>, counted by hand</p>
+      <p><span class="marked">T9001: $600.00</span><br>about 11.9&times; that</p>
+      <p class="small">Written down on 11 Oct, before any test existed: T9001 is flagged, and scores above all 15.</p>
+    </div>
+    <div>
+      <p class="small">Then I broke the rule on purpose, rules.py line 9:</p>
+      <pre><code>AMOUNT_RATIO_THRESHOLD = <span class="marked">50.0</span>
+<span class="prompt">$ python -m unittest tests.test_planted</span>
+<span class="cross">FAILED (failures=1)</span>
+
+<span class="prompt">$ git restore fraudsense_core/rules.py</span>
+<span class="prompt">$ python -m unittest tests.test_planted</span>
+<span class="tick">OK</span></code></pre>
+      <p class="hand" style="margin-top:16px">red when it's wrong,<br>green when it's right</p>
+    </div>
+  </div>
+  <p class="foot">The id T9001 and the expected result were mine, not the agent's.</p>
+  <aside class="notes">
+    How do I know the program does what I meant, and not just what the agent wrote?
+    A planted file: one customer, fifteen normal purchases, average 50.4, counted by hand. The assistant proposed those values and I checked and accepted them.
+    Then one purchase of 600, about twelve times that. The id T9001 and the expected result were mine, written down before a test existed.
+    Then I broke the threshold, 5 to 50, and the test went red. Put it back, green.
+    The whole suite is 82 tests, all passing.
+  </aside>
+</section>
+
+<!-- 4. What I learned -->
+<section>
+  <p class="kicker">4 / 5 &middot; What I learned</p>
+  <h2>Set the pass mark before you look</h2>
+  <div class="step">
+    <div class="when">2 Oct<br>435afe4</div>
+    <div>Keep the 5&times; rule if, on outside data, it catches <strong>&ge; 30%</strong> of fraud with precision <strong>&ge; 50%</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="when">3 Oct<br>c1effb0</div>
+    <div>Sparkov (simulated), 26,658 transactions, 157 fraud:<br>
+      recall <strong>0.433</strong> <span class="tick">&#10003;</span>
+      &nbsp; precision <strong>0.136</strong> <span class="cross">&#10007;</span>
+      &nbsp; <span class="ring">68/157</span>
+    </div>
+  </div>
+  <p class="big" style="margin-top:22px">My own rule failed my own bar.</p>
+  <p>Because the bar was in git first, I couldn't move it. So 5&times; is <span class="marked">not validated</span>, and my page says so.</p>
+  <aside class="notes">
+    One concrete moment from the repository. On 2 October I committed the question and the pass mark before measuring anything:
+    at least 30 percent recall and at least 50 percent precision.
+    The next day: it caught 68 of 157 frauds, recall fine, but only 68 of its 500 flags were fraud. Precision 0.136. Fail.
+    Writing the bar down first meant I could not quietly lower it afterwards. So I publish the weak numbers instead.
+  </aside>
+</section>
+
+<!-- 5. What's next -->
+<section>
+  <p class="kicker">5 / 5 &middot; What's next</p>
+  <h2>Tune it, then train it</h2>
+  <ul>
+    <li><strong>A threshold study.</strong> <code class="inline">evaluate</code> already shows the trade-off:
+      <table>
+        <thead><tr><th>cutoff</th><th>flagged</th><th>precision</th><th>recall</th></tr></thead>
+        <tbody>
+          <tr><td>0.75</td><td>500</td><td>0.136</td><td>0.433</td></tr>
+          <tr><td>0.95</td><td>175</td><td>0.274</td><td>0.306</td></tr>
+        </tbody>
+      </table>
+    </li>
+    <li><strong>Find out why</strong> the velocity rule fired 0 times on Sparkov.</li>
+    <li><strong>Then a trained model</strong>, compared on precision, recall, F1 and PR-AUC.</li>
+  </ul>
+  <p class="foot">Every flag says why. The numbers stay honest.</p>
+  <aside class="notes">
+    Next: a proper threshold study. The evaluate command already prints the trade-off: a stricter cutoff doubles precision but loses recall.
+    The velocity rule never fired on Sparkov, so I need to know why.
+    After that, a trained model, compared against the rules on the same measures.
+    Main point again: every flag says why, and the numbers stay honest.
+  </aside>
+</section>
+
+<!-- Closing: not one of the five -->
+<section>
+  <h1>fraudsense</h1>
+  <p class="big">Every flag says why.</p>
+  <p>Page: <a href="https://esst-prog2.github.io/fraudsense/">esst-prog2.github.io/fraudsense</a></p>
+  <p>Code: <a href="https://github.com/esst-prog2/fraudsense">github.com/esst-prog2/fraudsense</a></p>
+  <pre style="margin-top:22px"><code>python fraudsense.py score data/sample_transactions.csv</code></pre>
+  <p class="hand" style="margin-top:22px">Python 3.10+, nothing to install.</p>
+  <aside class="notes">Thank you. The page and the code are linked here; one command runs it on the sample file.</aside>
+</section>
+
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/plugin/notes.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    center: false,
+    hash: true,
+    transition: "none",
+    backgroundTransition: "none",
+    plugins: [RevealNotes]
+  });
+</script>
+</body>
+</html>
